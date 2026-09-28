@@ -1,0 +1,8 @@
+{
+  "name": "Federal Polytechnic Ukana - GNS CBT Portal",
+  "description": "Directorate of General Studies (GNS) Computer-Based Testing System at Federal Polytechnic Ukana, Akwa Ibom State.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
