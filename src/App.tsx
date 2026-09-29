@@ -36,11 +36,17 @@ import { ExaminationRoom } from './components/ExaminationRoom';
 import { StudentResultView } from './components/StudentResultView';
 import { OfficialBroadsheetPrint } from './components/OfficialBroadsheetPrint';
 import { SupabaseModal } from './components/SupabaseModal';
+import { LoginScreen } from './components/LoginScreen';
+import { OfflineIndicator } from './components/OfflineIndicator';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User>(() => {
     initializeStorage();
     return getCurrentUser();
+  });
+
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return localStorage.getItem('ukana_cbt_auth_v1') === 'true';
   });
 
   const [users, setUsers] = useState<User[]>(getUsers);
@@ -53,7 +59,26 @@ export default function App() {
   const [activeView, setActiveView] = useState<string>('dashboard');
   const [activeExam, setActiveExam] = useState<Examination | null>(null);
   const [activeSession, setActiveSession] = useState<ExaminationSession | null>(null);
-  const [isSupabaseModalOpen, setIsSupabaseModalOpen] = useState<boolean>(true);
+  const [isSupabaseModalOpen, setIsSupabaseModalOpen] = useState<boolean>(false);
+
+  // Auth Handlers
+  const handleLoginSuccess = (user: User) => {
+    setCurrentUser(user);
+    setStoredCurrentUser(user);
+    setIsAuthenticated(true);
+    localStorage.setItem('ukana_cbt_auth_v1', 'true');
+    setActiveView('dashboard');
+    addAuditLog(user.id, user.fullName, user.role, 'USER_LOGIN', `Authenticated successfully into CBT Portal as ${user.fullName}`);
+    reloadData();
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('ukana_cbt_auth_v1');
+    setActiveView('dashboard');
+    setActiveExam(null);
+    setActiveSession(null);
+  };
 
   // Refresh helper
   const reloadData = () => {
@@ -185,22 +210,36 @@ export default function App() {
     }
   };
 
+  // Render Login Portal if candidate or staff is not logged in
+  if (!isAuthenticated) {
+    return (
+      <>
+        <LoginScreen onLoginSuccess={handleLoginSuccess} users={users} />
+        <OfflineIndicator />
+      </>
+    );
+  }
+
   // If in active examination room mode, render clean Exam Room without general header
   if (activeView === 'exam_room' && activeExam && activeSession) {
     return (
-      <ExaminationRoom
-        examination={activeExam}
-        questions={questions.filter((q) => q.examinationId === activeExam.id)}
-        session={activeSession}
-        currentUser={currentUser}
-        onUpdateAnswers={handleUpdateAnswers}
-        onSubmitSession={handleSubmitSession}
-      />
+      <>
+        <ExaminationRoom
+          examination={activeExam}
+          questions={questions.filter((q) => q.examinationId === activeExam.id)}
+          session={activeSession}
+          currentUser={currentUser}
+          onUpdateAnswers={handleUpdateAnswers}
+          onSubmitSession={handleSubmitSession}
+        />
+        <OfflineIndicator />
+      </>
     );
   }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
+      <OfflineIndicator />
       
       {/* Header with Institution Wordmark and Quick Role Switcher */}
       <Header
@@ -211,6 +250,7 @@ export default function App() {
         activeView={activeView}
         setActiveView={setActiveView}
         onOpenSupabase={() => setIsSupabaseModalOpen(true)}
+        onLogout={handleLogout}
       />
 
       {/* Supabase Cloud Database Integration Modal */}

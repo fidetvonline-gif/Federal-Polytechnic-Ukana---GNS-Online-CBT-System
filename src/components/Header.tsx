@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User } from '../types';
-import { RefreshCw, ArrowRightLeft, Shield, BookOpen, Clock, CheckCircle2, UserCheck, Database } from 'lucide-react';
+import { RefreshCw, ArrowRightLeft, Shield, BookOpen, Clock, CheckCircle2, UserCheck, Database, LogOut } from 'lucide-react';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface HeaderProps {
   currentUser: User;
@@ -10,6 +11,7 @@ interface HeaderProps {
   activeView: string;
   setActiveView: (view: string) => void;
   onOpenSupabase: () => void;
+  onLogout: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -20,6 +22,7 @@ export const Header: React.FC<HeaderProps> = ({
   activeView,
   setActiveView,
   onOpenSupabase,
+  onLogout,
 }) => {
   const crestLogo = 'https://fedpolyukana.edu.ng/wp-content/uploads/2026/07/Logo-150x150-removebg-preview.png';
   const [currentTime, setCurrentTime] = useState<string>('');
@@ -182,6 +185,9 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </div>
 
+            {/* PWA Install Button */}
+            <PWAInstallButton />
+
             {/* Connect Supabase Button */}
             <button
               onClick={onOpenSupabase}
@@ -199,6 +205,16 @@ export const Header: React.FC<HeaderProps> = ({
               className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-md border border-slate-200 transition-colors cursor-pointer"
             >
               <RefreshCw className="w-3.5 h-3.5" />
+            </button>
+
+            {/* Sign Out Button */}
+            <button
+              onClick={onLogout}
+              title="Sign out of CBT Portal"
+              className="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 rounded-md border border-red-200 font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <LogOut className="w-3.5 h-3.5 text-red-600" />
+              <span className="hidden sm:inline">Sign Out</span>
             </button>
           </div>
 
